@@ -1,0 +1,18 @@
+{
+  "name": "gestao-produtos",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "node --test \"test/gestaoProdutos.test.js\"",
+    "test:mocha": "mocha \"test/**/*.mocha.test.js\"",
+    "test:all": "node --test \"test/gestaoProdutos.test.js\" && mocha \"test/**/*.mocha.test.js\""
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "devDependencies": {
+    "mocha": "^11.7.5"
+  }
+}
