@@ -39,6 +39,12 @@ export class ProdutoService {
         }
     }
 
+    validarPercentual(percentual) {
+        if (typeof percentual !== 'number' || percentual < 0 || percentual > 100) {
+            throw new Error('Percentual deve ser um número entre 0 e 100.');
+        }
+    }
+
     obterNomeDoProduto(indice) {
         this.validarIndice(indice);
         return this.produtos.at(indice).nome;
@@ -90,26 +96,38 @@ export class ProdutoService {
         this.validarIndice(indice);
         this.produtos.splice(indice, 1);
     }
+
+    obterPorNome(nome) {
+        return this.produtos.find(p => p.nome === nome);
+    }
+
+    listarOrdenadosPorNome() {
+        return [...this.produtos].sort((a, b) => a.nome.localeCompare(b.nome));
+    }
+
+    filtrarPorFaixaDePreco(precoMin, precoMax) {
+        if (typeof precoMin !== 'number' || typeof precoMax !== 'number' || precoMin > precoMax) {
+            throw new Error('Faixa de preço inválida.');
+        }
+        return this.produtos.filter(p => p.preco >= precoMin && p.preco <= precoMax);
+    }
+
+    calcularValorEstoque(indice) {
+        this.validarIndice(indice);
+        const p = this.produtos[indice];
+        return p.preco * p.estoque;
+    }
+
+    calcularValorEstoqueGeral() {
+        return this.produtos.reduce((total, p) => total + p.preco * p.estoque, 0);
+    }
+
+    aplicarDesconto(percentual, filtro = () => true) {
+        this.validarPercentual(percentual);
+        const fator = 1 - percentual / 100;
+        this.produtos.forEach(p => {
+            if (filtro(p)) p.preco *= fator;
+        });
+    }
 }
-
-const produtos = [
-    new Produto(1, 'Camiseta', 29.99, 100),
-    new Produto(2, 'Calça Jeans', 79.99, 50),
-    new Produto(3, 'Tênis', 149.99, 30)
-];
-
-const produtoService = new ProdutoService(produtos);
-
-export default produtoService;
-
-export const obterNomeDoProduto = (indice) => produtoService.obterNomeDoProduto(indice);
-export const obterPrecoDoProduto = (indice) => produtoService.obterPrecoDoProduto(indice);
-export const obterEstoqueDoProduto = (indice) => produtoService.obterEstoqueDoProduto(indice);
-export const obterPorIndice = (indice) => produtoService.obterPorIndice(indice);
-export const obterPorId = (id) => produtoService.obterPorId(id);
-export const obterTodosProdutos = () => produtoService.obterTodosProdutos();
-export const adicionarProduto = (produto) => produtoService.adicionarProduto(produto);
-export const atualizarProduto = (indice, produtoAtualizado) => produtoService.atualizarProduto(indice, produtoAtualizado);
-export const removerProduto = (indice) => produtoService.removerProduto(indice);
-
 

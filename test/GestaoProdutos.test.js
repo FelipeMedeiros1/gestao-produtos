@@ -1,161 +1,134 @@
-import test from 'node:test';
+import { describe, it, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { ProdutoService, Produto } from '../src/GestaoProdutos.js';
 
-async function carregarModulo() {
-	return import(`../src/GestaoProdutos.js?cacheBust=${Date.now()}-${Math.random()}`);
-}
+const produtosFixture = JSON.parse(
+	readFileSync(new URL('./fixtures/produtos.json', import.meta.url), 'utf8')
+);
 
-test('obterNomeDoProduto: retorna o nome correto por indice', async () => {
-	const { obterNomeDoProduto } = await carregarModulo();
-	assert.equal(obterNomeDoProduto(0), 'Camiseta');
-});
+describe('gestaoProdutos', () => {
+	let servico;
 
-test('obterPrecoDoProduto: retorna o preco correto por indice', async () => {
-	const { obterPrecoDoProduto } = await carregarModulo();
-	assert.equal(obterPrecoDoProduto(1), 79.99);
-});
-
-test('obterEstoqueDoProduto: retorna o estoque correto por indice', async () => {
-	const { obterEstoqueDoProduto } = await carregarModulo();
-	assert.equal(obterEstoqueDoProduto(2), 30);
-});
-
-test('obterPorIndice: retorna o produto completo', async () => {
-	const { obterPorIndice } = await carregarModulo();
-	const produto = obterPorIndice(0);
-
-	assert.equal(produto.id, 1);
-	assert.equal(produto.nome, 'Camiseta');
-	assert.equal(produto.preco, 29.99);
-	assert.equal(produto.estoque, 100);
-});
-
-test('obterPorId: retorna o produto correto', async () => {
-	const { obterPorId } = await carregarModulo();
-	const produto = obterPorId(2);
-
-	assert.equal(produto.nome, 'Calça Jeans');
-	assert.equal(produto.preco, 79.99);
-	assert.equal(produto.estoque, 50);
-});
-
-test('obterTodosProdutos: retorna lista inicial de 3 produtos', async () => {
-	const { obterTodosProdutos } = await carregarModulo();
-	const produtos = obterTodosProdutos();
-
-	assert.equal(produtos.length, 3);
-});
-
-test('adicionarProduto: adiciona um novo produto valido', async () => {
-	const { adicionarProduto, obterTodosProdutos, obterPorId } = await carregarModulo();
-
-	adicionarProduto({
-		id: 4,
-		nome: 'Boné',
-		preco: 49.9,
-		estoque: 20
+	beforeEach(() => {
+		const produtos = produtosFixture.map(
+			(p) => new Produto(p.id, p.nome, p.preco, p.estoque)
+		);
+		servico = new ProdutoService(produtos);
 	});
 
-	assert.equal(obterTodosProdutos().length, 4);
-	assert.equal(obterPorId(4).nome, 'Boné');
-});
-
-test('atualizarProduto: substitui o produto no indice informado', async () => {
-	const { atualizarProduto, obterPorIndice } = await carregarModulo();
-
-	atualizarProduto(0, {
-		id: 10,
-		nome: 'Regata',
-		preco: 39.99,
-		estoque: 80
+	it('obterNomeDoProduto: retorna o nome correto por indice', () => {
+		assert.equal(servico.obterNomeDoProduto(0), 'Camiseta');
 	});
 
-	const atualizado = obterPorIndice(0);
-	assert.equal(atualizado.id, 10);
-	assert.equal(atualizado.nome, 'Regata');
-	assert.equal(atualizado.preco, 39.99);
-	assert.equal(atualizado.estoque, 80);
-});
+	it('obterPrecoDoProduto: retorna o preco correto por indice', () => {
+		assert.equal(servico.obterPrecoDoProduto(1), 79.99);
+	});
 
-test('removerProduto: remove o item no indice informado', async () => {
-	const { removerProduto, obterTodosProdutos, obterPorIndice } = await carregarModulo();
+	it('obterEstoqueDoProduto: retorna o estoque correto por indice', () => {
+		assert.equal(servico.obterEstoqueDoProduto(2), 30);
+	});
 
-	removerProduto(1);
+	it('obterPorIndice: retorna o produto completo', () => {
+		const produto = servico.obterPorIndice(0);
 
-	assert.equal(obterTodosProdutos().length, 2);
-	assert.equal(obterPorIndice(1).nome, 'Tênis');
-});
+		assert.equal(produto.id, 1);
+		assert.equal(produto.nome, 'Camiseta');
+		assert.equal(produto.preco, 29.99);
+		assert.equal(produto.estoque, 100);
+	});
 
-test('funcoes por indice: lancam erro para indice invalido', async () => {
-	const {
-		obterNomeDoProduto,
-		obterPrecoDoProduto,
-		obterEstoqueDoProduto,
-		obterPorIndice,
-		atualizarProduto,
-		removerProduto
-	} = await carregarModulo();
+	it('obterPorId: retorna o produto correto', () => {
+		const produto = servico.obterPorId(2);
 
-	assert.throws(() => obterNomeDoProduto(-1), /Índice inválido/);
-	assert.throws(() => obterPrecoDoProduto(10), /Índice inválido/);
-	assert.throws(() => obterEstoqueDoProduto(1.5), /Índice inválido/);
-	assert.throws(() => obterPorIndice('0'), /Índice inválido/);
-	assert.throws(
-		() => atualizarProduto(99, { id: 1, nome: 'X', preco: 1, estoque: 1 }),
-		/Índice inválido/
-	);
-	assert.throws(() => removerProduto(-2), /Índice inválido/);
-});
+		assert.equal(produto.nome, 'Calça Jeans');
+		assert.equal(produto.preco, 79.99);
+		assert.equal(produto.estoque, 50);
+	});
 
-test('obterPorId: lanca erro para id invalido e inexistente', async () => {
-	const { obterPorId } = await carregarModulo();
+	it('obterTodosProdutos: retorna lista inicial de 3 produtos', () => {
+		const produtos = servico.obterTodosProdutos();
 
-	assert.throws(() => obterPorId(0), /ID inválido/);
-	assert.throws(() => obterPorId(-5), /ID inválido/);
-	assert.throws(() => obterPorId(1.2), /ID inválido/);
-	assert.throws(() => obterPorId(999), /não encontrado/);
-});
+		assert.equal(produtos.length, 3);
+	});
 
-test('adicionarProduto: lanca erro para produto invalido', async () => {
-	const { adicionarProduto } = await carregarModulo();
+	it('adicionarProduto: adiciona um novo produto valido', () => {
+		servico.adicionarProduto({
+			id: 4,
+			nome: 'Boné',
+			preco: 49.9,
+			estoque: 20
+		});
 
-	assert.throws(() => adicionarProduto(null), /objeto válido/);
-	assert.throws(
-		() => adicionarProduto({ id: 4, nome: '', preco: 10, estoque: 1 }),
-		/nome válido/
-	);
-	assert.throws(
-		() => adicionarProduto({ id: 4, nome: 'Teste', preco: -1, estoque: 1 }),
-		/preço válido/
-	);
-	assert.throws(
-		() => adicionarProduto({ id: 4, nome: 'Teste', preco: 1, estoque: -1 }),
-		/estoque válido/
-	);
-});
+		assert.equal(servico.obterTodosProdutos().length, 4);
+		assert.equal(servico.obterPorId(4).nome, 'Boné');
+	});
 
-test('adicionarProduto: lanca erro para ID duplicado', async () => {
-	const { adicionarProduto } = await carregarModulo();
-	assert.throws(
-		() => adicionarProduto({ id: 1, nome: 'Duplicado', preco: 10, estoque: 1 }),
-		/já existe/
-	);
-});
+	it('atualizarProduto: substitui o produto no indice informado', () => {
+		servico.atualizarProduto(0, {
+			id: 10,
+			nome: 'Regata',
+			preco: 39.99,
+			estoque: 80
+		});
 
-test('atualizarProduto lanca erro quando dados do produto sao invalidos', async () => {
-	const { atualizarProduto } = await carregarModulo();
+		const atualizado = servico.obterPorIndice(0);
+		assert.equal(atualizado.id, 10);
+		assert.equal(atualizado.nome, 'Regata');
+		assert.equal(atualizado.preco, 39.99);
+		assert.equal(atualizado.estoque, 80);
+	});
 
-	assert.throws(() => atualizarProduto(0, null), /objeto válido/);
-	assert.throws(
-		() => atualizarProduto(0, { id: 9, nome: '', preco: 10, estoque: 1 }),
-		/nome válido/
-	);
-	assert.throws(
-		() => atualizarProduto(0, { id: 9, nome: 'X', preco: -10, estoque: 1 }),
-		/preço válido/
-	);
-	assert.throws(
-		() => atualizarProduto(0, { id: 9, nome: 'X', preco: 10, estoque: -1 }),
-		/estoque válido/
-	);
+	it('removerProduto: remove o item no indice informado', () => {
+		servico.removerProduto(1);
+
+		assert.equal(servico.obterTodosProdutos().length, 2);
+		assert.equal(servico.obterPorIndice(1).nome, 'Tênis');
+	});
+
+	it('funcoes por indice: lancam erro para indice invalido', () => {
+		assert.throws(() => servico.obterNomeDoProduto(-1), /Índice inválido/);
+		assert.throws(() => servico.obterPrecoDoProduto(10), /Índice inválido/);
+		assert.throws(() => servico.obterEstoqueDoProduto(1.5), /Índice inválido/);
+		assert.throws(() => servico.obterPorIndice('0'), /Índice inválido/);
+		assert.throws(() => servico.atualizarProduto(99, { id: 1, nome: 'X', preco: 1, estoque: 1 }), /Índice inválido/);
+		assert.throws(() => servico.removerProduto(-2), /Índice inválido/);
+	});
+
+	it('obterPorId: lanca erro para id invalido e inexistente', () => {
+		assert.throws(() => servico.obterPorId(0), /ID inválido/);
+		assert.throws(() => servico.obterPorId(-5), /ID inválido/);
+		assert.throws(() => servico.obterPorId(1.2), /ID inválido/);
+		assert.throws(() => servico.obterPorId(999), /não encontrado/);
+	});
+
+	it('adicionarProduto: lanca erro para produto invalido', () => {
+		assert.throws(() => servico.adicionarProduto(null), /objeto válido/);
+		assert.throws(() => servico.adicionarProduto({ id: 4, nome: '', preco: 10, estoque: 1 }), /nome válido/);
+		assert.throws(() => servico.adicionarProduto({ id: 4, nome: 'Teste', preco: -1, estoque: 1 }), /preço válido/);
+		assert.throws(() => servico.adicionarProduto({ id: 4, nome: 'Teste', preco: 1, estoque: -1 }), /estoque válido/);
+	});
+
+	it('adicionarProduto: lanca erro para ID duplicado', () => {
+		assert.throws(
+			() => servico.adicionarProduto({ id: 1, nome: 'Duplicado', preco: 10, estoque: 1 }),
+			/já existe/
+		);
+	});
+
+	it('atualizarProduto lanca erro quando dados do produto sao invalidos', () => {
+		assert.throws(() => servico.atualizarProduto(0, null), /objeto válido/);
+		assert.throws(
+			() => servico.atualizarProduto(0, { id: 9, nome: '', preco: 10, estoque: 1 }),
+			/nome válido/
+		);
+		assert.throws(
+			() => servico.atualizarProduto(0, { id: 9, nome: 'X', preco: -10, estoque: 1 }),
+			/preço válido/
+		);
+		assert.throws(
+			() => servico.atualizarProduto(0, { id: 9, nome: 'X', preco: 10, estoque: -1 }),
+			/estoque válido/
+		);
+	});
 });
