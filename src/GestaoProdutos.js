@@ -78,6 +78,10 @@ export class ProdutoService {
         return this.produtos;
     }
 
+    proximoId() {
+        return this.produtos.reduce((max, p) => Math.max(max, p.id), 0) + 1;
+    }
+
     adicionarProduto(produto) {
         Produto.validar(produto);
         if (this.produtos.some(p => p.id === produto.id)) {

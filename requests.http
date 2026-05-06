@@ -1,0 +1,81 @@
+### Variáveis
+@host = http://localhost:3000
+# Fonte ativa para os blocos abaixo: troque @base entre /produtos (SQLite) e /produtos-json (JSON)
+@base = /produtos
+# @base = /produtos-json
+@sqlite = /produtos
+@json = /produtos-json
+
+### [SQLite] Listar todos
+GET {{host}}{{sqlite}}
+
+### [JSON] Listar todos
+GET {{host}}{{json}}
+
+### [SQLite] Estoque total
+GET {{host}}/estoque/total
+
+### [JSON] Estoque total
+GET {{host}}/estoque-json/total
+
+### Listar todos os produtos
+GET {{host}}{{base}}
+
+### Listar ordenados por nome
+GET {{host}}{{base}}?ordenado=true
+
+### Filtrar por faixa de preço
+GET {{host}}{{base}}?precoMin=20&precoMax=100
+
+### Buscar produto por ID
+GET {{host}}{{base}}/1
+
+### Buscar produto inexistente (deve retornar 404)
+GET {{host}}{{base}}/999
+
+### Criar produto (id é gerado automaticamente)
+POST {{host}}{{base}}
+Content-Type: application/json
+
+{
+    "nome": "Tênis Esportivo",
+    "preco": 987.90,
+    "estoque": 50
+}
+
+### Tentar criar produto inválido (deve retornar 400)
+POST {{host}}{{base}}
+Content-Type: application/json
+
+{
+    "nome": "",
+    "preco": -10,
+    "estoque": 5
+}
+
+### Atualizar produto existente
+PUT {{host}}{{base}}/1
+Content-Type: application/json
+
+{
+    "nome": "Camiseta Premium",
+    "preco": 49.90,
+    "estoque": 80
+}
+
+### Remover produto
+DELETE {{host}}{{base}}/2
+
+### Valor total em estoque (SQLite)
+GET {{host}}/estoque/total
+
+### Valor total em estoque (JSON)
+GET {{host}}/estoque-json/total
+
+### Aplicar desconto de 10% em todos
+POST {{host}}{{base}}/desconto
+Content-Type: application/json
+
+{
+    "percentual": 10
+}

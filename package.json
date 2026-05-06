@@ -4,9 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "node --test \"test/gestaoProdutos.test.js\"",
+    "start": "node src/server.js",
+    "test": "node --test \"test/gestaoProdutos.test.js\" \"test/produtoRepository.test.js\"",
     "test:mocha": "mocha \"test/**/*.mocha.test.js\"",
-    "test:all": "node --test \"test/gestaoProdutos.test.js\" && mocha \"test/**/*.mocha.test.js\""
+    "test:all": "npm test && npm run test:mocha"
   },
   "keywords": [],
   "author": "",
@@ -14,5 +15,9 @@
   "type": "module",
   "devDependencies": {
     "mocha": "^11.7.5"
+  },
+  "dependencies": {
+    "better-sqlite3": "^12.9.0",
+    "express": "^5.2.1"
   }
 }
