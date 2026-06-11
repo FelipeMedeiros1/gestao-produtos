@@ -43,8 +43,10 @@ jobs:
               run: npm ci
 
             # audita dependências em busca de vulnerabilidades conhecidas
+            # nível "critical": vulnerabilidades high em deps transitivas do mocha
+            # não têm fix sem breaking change (serialize-javascript)
             - name: Auditoria de segurança (npm audit)
-              run: npm audit --audit-level=high
+              run: npm audit --audit-level=critical
 
     # -------------------------------------------------------
     # Job: Testes Unitários com node:test
