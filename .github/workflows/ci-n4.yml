@@ -85,7 +85,7 @@ jobs:
               with:
                   name: "Resultados - Testes Unitários"
                   path: reports/node-results.xml
-                  reporter: jest-junit
+                  reporter: java-junit
                   fail-on-error: false
 
             # armazena o XML como artefato para download posterior
@@ -134,7 +134,7 @@ jobs:
               with:
                   name: "Resultados - Testes Mocha"
                   path: reports/mocha-results.xml
-                  reporter: jest-junit
+                  reporter: java-junit
                   fail-on-error: false
 
             # armazena o XML como artefato para download posterior

@@ -58,7 +58,7 @@ jobs:
         with:
           name: Resultados dos Testes
           path: reports/*.xml
-          reporter: jest-junit
+          reporter: java-junit
           fail-on-error: false
 
       # Armazena os arquivos XML como artefato para download posterior
