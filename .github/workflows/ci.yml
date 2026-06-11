@@ -1,0 +1,71 @@
+name: CI
+
+on:
+  # Executa em push para as branches principais
+  push:
+    branches: [main, master]
+
+  # Execução manual pelo GitHub Actions UI (aba "Actions")
+  workflow_dispatch:
+
+  # Execução agendada: toda segunda-feira às 06:00 UTC
+  schedule:
+    - cron: '0 6 * * 1'
+
+# Permissões necessárias para publicar resultados de testes como checks
+permissions:
+  contents: read
+  checks: write
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout do repositório
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+          cache: npm
+
+      - name: Instalar dependências
+        run: npm ci
+
+      - name: Criar diretório de relatórios
+        run: mkdir -p reports
+
+      # Executa os testes com node:test e gera saída legível no console + XML JUnit
+      - name: Executar testes Node (node:test)
+        run: |
+          node --test \
+            --test-reporter=spec --test-reporter-destination=stdout \
+            --test-reporter=junit --test-reporter-destination=reports/node-results.xml \
+            "test/GestaoProdutos.test.js" "test/produtoRepository.test.js"
+
+      # Executa os testes Mocha e gera XML JUnit via mocha-junit-reporter
+      - name: Executar testes Mocha
+        env:
+          MOCHA_FILE: reports/mocha-results.xml
+        run: npm run test:mocha:ci
+
+      # Publica os resultados como check no commit/PR (visível diretamente na UI do GitHub)
+      - name: Publicar relatório de testes
+        uses: dorny/test-reporter@v1
+        if: always()
+        with:
+          name: Resultados dos Testes
+          path: reports/*.xml
+          reporter: jest-junit
+          fail-on-error: false
+
+      # Armazena os arquivos XML como artefato para download posterior
+      - name: Armazenar relatórios como artefato
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-reports
+          path: reports/
+          retention-days: 30

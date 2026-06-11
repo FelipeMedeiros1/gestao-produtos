@@ -41,7 +41,7 @@ export class ProdutoService {
 
     validarPercentual(percentual) {
         if (typeof percentual !== 'number' || percentual < 0 || percentual > 100) {
-            throw new Error('Percentual deve ser um número entre 0 e 100.');
+            throw new Error('Percentual deve ser um número entre 0 e 99.');
         }
     }
 
