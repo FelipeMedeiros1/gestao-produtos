@@ -1,4 +1,4 @@
-# CI de Nível 04 - Integrada ao Build do código
+# CI - Integrada ao Build do código
 # Estrutura: code-quality → unit-tests + mocha-tests (paralelo) → deploy
 # Gatilho principal: push em branch protegida
 
@@ -6,6 +6,7 @@ name: "ci: Gestão de Produtos"
 
 # gatilhos / triggers
 on:
+  # execução por push enviado
     push:
         branches: [main, master]
 
@@ -14,7 +15,7 @@ on:
 
     # execução agendada: 11 de junho às 13:00 UTC
     schedule:
-        - cron: "0 13 11 6 *"
+        - cron: "0 15 11 6 *"
 
 # permissões mínimas necessárias
 permissions:
