@@ -13,10 +13,10 @@ on:
     # execução manual pela aba "Actions"
     workflow_dispatch:
 
-    # execução agendada: 11 de junho às 13:00 UTC
+    # execução agendada:  
     schedule:
-        - cron: "0 15 11 6 *"
-
+    - cron: "*/15 * * * *"
+        
 # permissões mínimas necessárias
 permissions:
     contents: read
