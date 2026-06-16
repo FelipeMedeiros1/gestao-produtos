@@ -4,3 +4,4 @@ produtos.db-journal
 produtos.db-wal
 produtos.db-shm
 data/produtos.json
+reports/
