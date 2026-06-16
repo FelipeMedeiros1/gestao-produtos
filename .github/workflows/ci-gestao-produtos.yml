@@ -134,7 +134,7 @@ jobs:
         run: npx mocha --reporter mocha-junit-reporter --reporter-options mochaFile=reports/mocha-results.xml "test/**/*.mocha.test.js"
 
       - name: Rodando testes Mocha HTML
-        run: npx mocha --reporter mochawesome --reporter-options reportDir=reports --reporter-options reportFilename=mochawesome --reporter-options overwrite=true "test/**/*.mocha.test.js"
+        run: npx mocha --reporter mochawesome --reporter-options reportDir=reports --reporter-options reportFilename=mochawesome --reporter-options overwrite=true --reporter-options inlineAssets=true "test/**/*.mocha.test.js"
 
       # publica os resultados como Check no commit (visível na UI do GitHub)
       - name: Publicando relatório de testes Mocha
