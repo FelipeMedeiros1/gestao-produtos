@@ -81,6 +81,11 @@ jobs:
             --test-reporter=junit --test-reporter-destination=reports/node-results.xml \
             "test/GestaoProdutos.test.js" "test/produtoRepository.test.js"
 
+      # converte XML JUnit para HTML
+      - name: Convertendo relatório para HTML
+        if: always()
+        run: node scripts/junit-to-html.js reports/node-results.xml reports/node-report.html
+
       # publica os resultados como Check no commit (visível na UI do GitHub)
       - name: Publicando relatório de testes unitários
         uses: dorny/test-reporter@v1
@@ -91,13 +96,13 @@ jobs:
           reporter: java-junit
           fail-on-error: false
 
-      # armazena o XML como artefato para download posterior
-      - name: Upload do relatório
+      # armazena os relatórios como artefatos para download posterior
+      - name: Upload dos relatórios XML e HTML
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: unit-test-report
-          path: reports/node-results.xml
+          name: unit-test-reports
+          path: reports/node-*.{xml,html}
           retention-days: 7
 
   # -------------------------------------------------------
@@ -140,13 +145,21 @@ jobs:
           reporter: java-junit
           fail-on-error: false
 
-      # armazena o XML como artefato para download posterior
-      - name: Upload do relatório
+      # armazena os relatórios como artefatos para download posterior
+      - name: Upload do relatório XML
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: mocha-test-report
+          name: mocha-test-report-xml
           path: reports/mocha-results.xml
+          retention-days: 7
+
+      - name: Upload do relatório HTML
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mocha-test-html-report
+          path: reports/mochawesome.html
           retention-days: 7
 
   # -------------------------------------------------------
