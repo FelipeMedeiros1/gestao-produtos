@@ -129,11 +129,12 @@ jobs:
       - name: Criar diretório de relatórios
         run: mkdir -p reports
 
-      # mocha-junit-reporter usa MOCHA_FILE para definir o destino do XML
-      - name: Rodando testes Mocha
-        env:
-          MOCHA_FILE: reports/mocha-results.xml
-        run: npm run test:mocha:ci
+      # roda Mocha com reporter JUnit direto para garantir XML
+      - name: Rodando testes Mocha JUnit
+        run: npx mocha --reporter mocha-junit-reporter --reporter-options mochaFile=reports/mocha-results.xml "test/**/*.mocha.test.js"
+
+      - name: Rodando testes Mocha HTML
+        run: npx mocha --reporter mochawesome --reporter-options reportDir=reports --reporter-options reportFilename=mochawesome --reporter-options overwrite=true "test/**/*.mocha.test.js"
 
       # publica os resultados como Check no commit (visível na UI do GitHub)
       - name: Publicando relatório de testes Mocha
