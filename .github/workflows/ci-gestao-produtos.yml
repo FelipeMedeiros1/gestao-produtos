@@ -7,158 +7,158 @@ name: "ci: Gestão de Produtos"
 # gatilhos / triggers
 on:
   # execução por push enviado
-    push:
-        branches: [main, master]
+  push:
+    branches: [main, master]
 
-    # execução manual pela aba "Actions"
-    workflow_dispatch:
+  # execução manual pela aba "Actions"
+  workflow_dispatch:
 
-    # execução agendada:  
-    schedule:
-    - cron: "*/15 * * * *"
-        
+  # execução agendada:
+  schedule:
+    - cron: "*/5 * * * *"
+
 # permissões mínimas necessárias
 permissions:
-    contents: read
-    checks: write
+  contents: read
+  checks: write
 
 jobs:
-    # -------------------------------------------------------
-    # Job: Qualidade de código
-    # Roda ANTES dos testes.
-    # Verifica integridade das dependências com npm audit.
-    # -------------------------------------------------------
-    code-quality:
-        name: "Qualidade de Código"
-        runs-on: ubuntu-latest
+  # -------------------------------------------------------
+  # Job: Qualidade de código
+  # Roda ANTES dos testes.
+  # Verifica integridade das dependências com npm audit.
+  # -------------------------------------------------------
+  code-quality:
+    name: "Qualidade de Código"
+    runs-on: ubuntu-latest
 
-        steps:
-            - uses: actions/checkout@v4
+    steps:
+      - uses: actions/checkout@v4
 
-            - uses: actions/setup-node@v4
-              with:
-                  node-version: 22.x
-                  cache: "npm"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+          cache: "npm"
 
-            - name: Instalando dependências
-              run: npm ci
+      - name: Instalando dependências
+        run: npm ci
 
-            # audita dependências em busca de vulnerabilidades conhecidas
-            # nível "critical": vulnerabilidades high em deps transitivas do mocha
-            # não têm fix sem breaking change (serialize-javascript)
-            - name: Auditoria de segurança (npm audit)
-              run: npm audit --audit-level=critical
+      # audita dependências em busca de vulnerabilidades conhecidas
+      # nível "critical": vulnerabilidades high em deps transitivas do mocha
+      # não têm fix sem breaking change (serialize-javascript)
+      - name: Auditoria de segurança (npm audit)
+        run: npm audit --audit-level=critical
 
-    # -------------------------------------------------------
-    # Job: Testes Unitários com node:test
-    # Só roda se o job de qualidade passou.
-    # Gera relatório JUnit publicado como Check no commit.
-    # -------------------------------------------------------
-    unit-tests:
-        name: "Testes Unitários (node:test)"
-        needs: [code-quality]
-        runs-on: ubuntu-latest
+  # -------------------------------------------------------
+  # Job: Testes Unitários com node:test
+  # Só roda se o job de qualidade passou.
+  # Gera relatório JUnit publicado como Check no commit.
+  # -------------------------------------------------------
+  unit-tests:
+    name: "Testes Unitários (node:test)"
+    needs: [code-quality]
+    runs-on: ubuntu-latest
 
-        steps:
-            - uses: actions/checkout@v4
+    steps:
+      - uses: actions/checkout@v4
 
-            - uses: actions/setup-node@v4
-              with:
-                  node-version: 22.x
-                  cache: "npm"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+          cache: "npm"
 
-            - name: Instalando dependências
-              run: npm ci
+      - name: Instalando dependências
+        run: npm ci
 
-            - name: Criar diretório de relatórios
-              run: mkdir -p reports
+      - name: Criar diretório de relatórios
+        run: mkdir -p reports
 
-            # gera saída legível no console + XML JUnit para o relatório
-            - name: Rodando testes unitários
-              run: |
-                  node --test \
-                    --test-reporter=spec --test-reporter-destination=stdout \
-                    --test-reporter=junit --test-reporter-destination=reports/node-results.xml \
-                    "test/GestaoProdutos.test.js" "test/produtoRepository.test.js"
+      # gera saída legível no console + XML JUnit para o relatório
+      - name: Rodando testes unitários
+        run: |
+          node --test \
+            --test-reporter=spec --test-reporter-destination=stdout \
+            --test-reporter=junit --test-reporter-destination=reports/node-results.xml \
+            "test/GestaoProdutos.test.js" "test/produtoRepository.test.js"
 
-            # publica os resultados como Check no commit (visível na UI do GitHub)
-            - name: Publicando relatório de testes unitários
-              uses: dorny/test-reporter@v1
-              if: always()
-              with:
-                  name: "Resultados - Testes Unitários"
-                  path: reports/node-results.xml
-                  reporter: java-junit
-                  fail-on-error: false
+      # publica os resultados como Check no commit (visível na UI do GitHub)
+      - name: Publicando relatório de testes unitários
+        uses: dorny/test-reporter@v1
+        if: always()
+        with:
+          name: "Resultados - Testes Unitários"
+          path: reports/node-results.xml
+          reporter: java-junit
+          fail-on-error: false
 
-            # armazena o XML como artefato para download posterior
-            - name: Upload do relatório
-              uses: actions/upload-artifact@v4
-              if: always()
-              with:
-                  name: unit-test-report
-                  path: reports/node-results.xml
-                  retention-days: 7
+      # armazena o XML como artefato para download posterior
+      - name: Upload do relatório
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: unit-test-report
+          path: reports/node-results.xml
+          retention-days: 7
 
-    # -------------------------------------------------------
-    # Job: Testes de Integração com Mocha
-    # Roda em paralelo com unit-tests, após code-quality.
-    # Gera relatório JUnit publicado como Check no commit.
-    # -------------------------------------------------------
-    mocha-tests:
-        name: "Testes de Integração (Mocha)"
-        needs: [code-quality]
-        runs-on: ubuntu-latest
+  # -------------------------------------------------------
+  # Job: Testes de Integração com Mocha
+  # Roda em paralelo com unit-tests, após code-quality.
+  # Gera relatório JUnit publicado como Check no commit.
+  # -------------------------------------------------------
+  mocha-tests:
+    name: "Testes de Integração (Mocha)"
+    needs: [code-quality]
+    runs-on: ubuntu-latest
 
-        steps:
-            - uses: actions/checkout@v4
+    steps:
+      - uses: actions/checkout@v4
 
-            - uses: actions/setup-node@v4
-              with:
-                  node-version: 22.x
-                  cache: "npm"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+          cache: "npm"
 
-            - name: Instalando dependências
-              run: npm ci
+      - name: Instalando dependências
+        run: npm ci
 
-            - name: Criar diretório de relatórios
-              run: mkdir -p reports
+      - name: Criar diretório de relatórios
+        run: mkdir -p reports
 
-            # mocha-junit-reporter usa MOCHA_FILE para definir o destino do XML
-            - name: Rodando testes Mocha
-              env:
-                  MOCHA_FILE: reports/mocha-results.xml
-              run: npm run test:mocha:ci
+      # mocha-junit-reporter usa MOCHA_FILE para definir o destino do XML
+      - name: Rodando testes Mocha
+        env:
+          MOCHA_FILE: reports/mocha-results.xml
+        run: npm run test:mocha:ci
 
-            # publica os resultados como Check no commit (visível na UI do GitHub)
-            - name: Publicando relatório de testes Mocha
-              uses: dorny/test-reporter@v1
-              if: always()
-              with:
-                  name: "Resultados - Testes Mocha"
-                  path: reports/mocha-results.xml
-                  reporter: java-junit
-                  fail-on-error: false
+      # publica os resultados como Check no commit (visível na UI do GitHub)
+      - name: Publicando relatório de testes Mocha
+        uses: dorny/test-reporter@v1
+        if: always()
+        with:
+          name: "Resultados - Testes Mocha"
+          path: reports/mocha-results.xml
+          reporter: java-junit
+          fail-on-error: false
 
-            # armazena o XML como artefato para download posterior
-            - name: Upload do relatório
-              uses: actions/upload-artifact@v4
-              if: always()
-              with:
-                  name: mocha-test-report
-                  path: reports/mocha-results.xml
-                  retention-days: 7
+      # armazena o XML como artefato para download posterior
+      - name: Upload do relatório
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mocha-test-report
+          path: reports/mocha-results.xml
+          retention-days: 7
 
-    # -------------------------------------------------------
-    # Job: Deploy
-    # Só roda se AMBOS os jobs de teste passaram com sucesso.
-    # Segue o padrão de pipeline integrada.
-    # -------------------------------------------------------
-    deploy:
-        name: "Deploy"
-        needs: [unit-tests, mocha-tests]
-        runs-on: ubuntu-latest
+  # -------------------------------------------------------
+  # Job: Deploy
+  # Só roda se AMBOS os jobs de teste passaram com sucesso.
+  # Segue o padrão de pipeline integrada.
+  # -------------------------------------------------------
+  deploy:
+    name: "Deploy"
+    needs: [unit-tests, mocha-tests]
+    runs-on: ubuntu-latest
 
-        steps:
-            - name: Simulando Deploy
-              run: echo "Deploy realizado com sucesso!"
+    steps:
+      - name: Simulando Deploy
+        run: echo "Deploy realizado com sucesso!"
