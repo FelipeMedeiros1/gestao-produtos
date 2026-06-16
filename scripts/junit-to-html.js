@@ -1,8 +1,7 @@
 #!/usr/bin/env node
 
-const fs = require('fs');
-const path = require('path');
-const xml2js = require('xml2js');
+import fs from 'fs';
+import path from 'path';
 
 // Simples conversor de JUnit XML para HTML
 const xmlFile = process.argv[2] || 'reports/node-results.xml';
