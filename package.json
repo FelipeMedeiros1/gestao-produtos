@@ -9,7 +9,7 @@
     "test:mocha": "mocha \"test/**/*.mocha.test.js\"",
     "test:all": "npm test && npm run test:mocha",
     "test:node:ci": "node --test --test-reporter=spec --test-reporter-destination=stdout --test-reporter=junit --test-reporter-destination=reports/node-results.xml \"test/GestaoProdutos.test.js\" \"test/produtoRepository.test.js\"",
-    "test:mocha:ci": "mocha --reporter mochawesome --reporter-destination reports \"test/**/*.mocha.test.js\"",
+    "test:mocha:ci": "mocha --reporter spec --reporter mocha-junit-reporter --reporter mochawesome --reporter-destination reports \"test/**/*.mocha.test.js\"",
     "test:ci": "npm run test:node:ci && npm run test:mocha:ci",
     "junit-to-html": "node scripts/junit-to-html.js"
   },
